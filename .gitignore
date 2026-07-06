@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Flask
+instance/
+
+# User-uploaded CSVs (runtime data, not source)
+uploads/*
+!uploads/.gitkeep
+
+# Editor/OS cruft
+.vscode/
+.DS_Store
+Thumbs.db

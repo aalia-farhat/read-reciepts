@@ -1,0 +1,941 @@
+textarea,
+input.text,
+input[type='text'],
+input[type='button'],
+input[type='submit'],
+.input-checkbox,
+select {
+  -webkit-appearance: none;
+}
+select {
+  background-image: url("data:image/svg+xml;utf8,<svg fill='black' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>");
+  background-repeat: no-repeat;
+  background-position-x: 100%;
+  background-position-y: 50%;
+}
+
+.mobile-ad {
+  display: none;
+}
+label {
+  word-break: break-all;
+}
+
+/* ============================================
+   GLOBAL STYLES & COLOR VARIABLES
+   ============================================ */
+
+:root {
+    /* Force light UI chrome (form controls, scrollbars) even when the OS is in dark mode */
+    color-scheme: light;
+
+    /* Colors - Bookstore Inspired */
+    --color-cream: #fffaf4;
+    --color-beige: #f5ede1;
+    --color-parchment: #ede1d1;
+    --color-coffee: #8b6f47;
+    --color-brown-dark: #4b2e2e;
+    --color-brown-light: #7a5c4d;
+    --color-accent-gold: #c8a97e;
+    --color-accent-warm: #d4a574;
+    --color-success: #6b9e76;
+    --color-error: #d64545;
+    --color-error-light: #f5e0e0;
+    
+    /* Typography */
+    --font-serif: 'Georgia', 'Garamond', serif;
+    --font-mono: 'Courier New', monospace;
+    --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    
+    /* Spacing */
+    --spacing-xs: 0.5rem;
+    --spacing-sm: 1rem;
+    --spacing-md: 1.5rem;
+    --spacing-lg: 2rem;
+    --spacing-xl: 3rem;
+    --spacing-2xl: 4rem;
+    
+    /* Shadows */
+    --shadow-sm: 0 2px 8px rgba(75, 46, 46, 0.08);
+    --shadow-md: 0 8px 20px rgba(75, 46, 46, 0.12);
+    --shadow-lg: 0 12px 32px rgba(75, 46, 46, 0.15);
+    
+    /* Border Radius */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    
+    /* Transitions */
+    --transition: all 0.3s ease;
+}
+
+
+/* ============================================
+   RESET & BASE STYLES
+   ============================================ */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: var(--font-sans);
+    background-image: url('/static/images/bg.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    color: var(--color-brown-dark);
+    line-height: 1.6;
+    min-height: 100vh;
+}
+
+a {
+    color: var(--color-coffee);
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+a:hover {
+    color: var(--color-accent-gold);
+}
+
+button {
+    cursor: pointer;
+    border: none;
+    font-family: var(--font-sans);
+    transition: var(--transition);
+}
+
+input, select {
+    font-family: var(--font-sans);
+}
+
+/* ============================================
+   CONTAINER & LAYOUT
+   ============================================ */
+
+.wrapper {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    padding: var(--spacing-md);
+}
+
+.container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.upload-page,
+.workspace-page {
+    width: 100%;
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+/* ============================================
+   HEADER SECTION
+   ============================================ */
+
+.header {
+    text-align: center;
+    margin-bottom: var(--spacing-md);
+}
+
+.back-link {
+    display: inline-block;
+    margin-bottom: var(--spacing-md);
+    color: var(--color-brown-light);
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.back-link:hover {
+    color: var(--color-coffee);
+}
+
+.main-title {
+    font-family: var(--font-serif);
+    font-size: 2rem;
+    color: var(--color-brown-dark);
+    margin-bottom: var(--spacing-xs);
+    font-weight: 700;
+    letter-spacing: -1px;
+}
+
+.subtitle {
+    font-size: 1rem;
+    color: var(--color-coffee);
+    margin-bottom: var(--spacing-xs);
+    font-family: var(--font-serif);
+}
+
+.description {
+    font-size: 0.85rem;
+    color: var(--color-brown-light);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+
+/* ============================================
+   UPLOAD PAGE STYLES
+   ============================================ */
+
+.upload-card {
+    background: var(--color-cream);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-md);
+    box-shadow: var(--shadow-lg);
+    border: 2px solid var(--color-accent-gold);
+    margin-bottom: var(--spacing-md);
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.upload-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.file-upload-wrapper {
+    position: relative;
+}
+
+.file-upload-label {
+    display: block;
+    cursor: pointer;
+}
+
+.file-upload-content {
+    border: 3px dashed var(--color-accent-gold);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md) var(--spacing-md);
+    text-align: center;
+    transition: var(--transition);
+    background: rgba(200, 169, 126, 0.05);
+}
+
+.file-upload-label:hover .file-upload-content,
+.file-upload-label.highlight .file-upload-content {
+    background: rgba(200, 169, 126, 0.1);
+    border-color: var(--color-coffee);
+}
+
+.upload-icon {
+    font-size: 1.8rem;
+    margin-bottom: var(--spacing-xs);
+}
+
+.file-upload-content h2 {
+    font-size: 1.1rem;
+    color: var(--color-brown-dark);
+    margin-bottom: var(--spacing-xs);
+    font-family: var(--font-serif);
+}
+
+.upload-hint {
+    font-size: 0.85rem;
+    color: var(--color-coffee);
+    margin-bottom: var(--spacing-xs);
+}
+
+.upload-formats {
+    font-size: 0.75rem;
+    color: var(--color-brown-light);
+}
+
+.file-input {
+    display: none;
+}
+
+.file-name-display {
+    margin-top: var(--spacing-md);
+    padding: var(--spacing-md);
+    background: rgba(107, 158, 118, 0.1);
+    border-radius: var(--radius-sm);
+    color: var(--color-success);
+    font-weight: 600;
+    text-align: center;
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: var(--transition);
+}
+
+.file-name-display.show {
+    max-height: 50px;
+    opacity: 1;
+}
+
+
+/* ============================================
+   BUTTON STYLES
+   ============================================ */
+
+.btn {
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-radius: var(--radius-md);
+    font-size: 1rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    transition: var(--transition);
+    cursor: pointer;
+    border: none;
+    text-decoration: none;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--color-coffee) 0%, var(--color-brown-light) 100%);
+    color: white;
+    box-shadow: var(--shadow-md);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+.btn-text {
+    flex: 1;
+}
+
+.btn-arrow,
+.btn-icon {
+    font-size: 1.2rem;
+}
+
+
+/* ============================================
+   ERROR & INFO MESSAGES
+   ============================================ */
+
+.error-container {
+    margin: var(--spacing-lg) 0;
+    animation: slideIn 0.4s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.error-message {
+    background: var(--color-error-light);
+    border-left: 4px solid var(--color-error);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md) var(--spacing-lg);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    color: var(--color-error);
+    font-weight: 500;
+}
+
+.error-icon {
+    font-size: 1.5rem;
+}
+
+.error-text {
+    flex: 1;
+}
+
+
+/* ============================================
+   HELP SECTION
+   ============================================ */
+
+.help-section {
+    background: rgba(200, 169, 126, 0.08);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-sm) var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+}
+
+.help-section h3 {
+    color: var(--color-brown-dark);
+    margin-bottom: var(--spacing-xs);
+    font-family: var(--font-serif);
+    font-size: 0.95rem;
+}
+
+.help-steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: var(--spacing-sm);
+}
+
+.step {
+    display: flex;
+    gap: var(--spacing-xs);
+}
+
+.step-number {
+    background: var(--color-accent-gold);
+    color: white;
+    width: 22px;
+    height: 22px;
+    font-size: 0.75rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.step-content p {
+    font-size: 0.75rem;
+    color: var(--color-brown-dark);
+    line-height: 1.35;
+}
+
+.step-content strong {
+    color: var(--color-coffee);
+}
+
+/* ============================================
+   FOOTER STYLES
+   ============================================ */
+
+.footer {
+    text-align: center;
+    margin-top: var(--spacing-sm);
+    color: var(--color-coffee);
+    font-size: 0.75rem;
+}
+
+.footer p {
+    margin: 0;
+}
+
+
+/* ============================================
+   NAME FIELD (upload page)
+   ============================================ */
+
+.name-field-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.name-field-label {
+    font-size: 0.8rem;
+    color: var(--color-brown-light);
+    font-weight: 600;
+}
+
+.name-field-input {
+    padding: var(--spacing-sm);
+    border: 2px solid var(--color-accent-gold);
+    border-radius: var(--radius-md);
+    font-size: 0.95rem;
+    background: white;
+    color: var(--color-brown-dark);
+}
+
+.name-field-input:focus {
+    outline: none;
+    border-color: var(--color-coffee);
+}
+
+
+/* ============================================
+   WORKSPACE PAGE (live receipt + controls)
+   ============================================ */
+
+.container-wide {
+    max-width: 1100px;
+}
+
+.workspace-page {
+    width: 100%;
+}
+
+.workspace-top {
+    margin-bottom: var(--spacing-lg);
+}
+
+.workspace-grid {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    gap: var(--spacing-2xl);
+    align-items: start;
+}
+
+.ticket-column {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+
+/* ============================================
+   THE TICKET (receipt reproduction)
+   ============================================ */
+
+.ticket {
+    background: #fffef8;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    padding: var(--spacing-lg) var(--spacing-md);
+    font-size: 0.85rem;
+    line-height: 1.6;
+    color: #1a1a1a;
+    transform: rotate(-0.6deg);
+    position: relative;
+}
+
+.ticket.ticket-classic {
+    font-family: var(--font-mono);
+}
+
+.ticket.ticket-compatible {
+    font-family: var(--font-sans);
+}
+
+.ticket-header {
+    text-align: center;
+}
+
+.ticket-brand {
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    margin: var(--spacing-xs) 0 0;
+}
+
+.ticket-period {
+    font-size: 0.7rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #555;
+    margin-top: var(--spacing-xs);
+}
+
+.ticket-order {
+    text-align: center;
+    margin-top: var(--spacing-md);
+    font-size: 0.72rem;
+}
+
+.ticket-order p {
+    margin: 2px 0;
+}
+
+.ticket-rule {
+    border-bottom: 1px dashed #999;
+    margin: var(--spacing-md) 0;
+}
+
+.ticket-rule-thin {
+    border-bottom-style: dotted;
+    margin: var(--spacing-xs) 0;
+}
+
+.ticket-columns-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.ticket-items {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    min-height: 1.5rem;
+}
+
+.ticket-item-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.item-qty {
+    flex: 0 0 auto;
+    width: 1.8em;
+}
+
+.item-name {
+    flex: 1 1 auto;
+    word-break: break-word;
+}
+
+.item-amt {
+    flex: 0 0 auto;
+    white-space: nowrap;
+}
+
+.ticket-item-sub {
+    padding-left: calc(1.8em + 8px);
+    font-size: 0.72rem;
+    opacity: 0.7;
+}
+
+.ticket-empty {
+    text-align: center;
+    font-size: 0.8rem;
+    color: #777;
+    padding: var(--spacing-md) 0;
+}
+
+.ticket-totals p,
+.ticket-card-info p {
+    margin: 2px 0;
+    font-size: 0.75rem;
+}
+
+.ticket-totals span {
+    font-weight: 700;
+    margin-left: 4px;
+}
+
+.ticket-thanks {
+    text-align: center;
+    font-size: 0.85rem;
+    font-weight: 700;
+    margin: var(--spacing-md) 0 0;
+}
+
+.ticket-barcode {
+    height: 50px;
+    margin: var(--spacing-md) auto 4px;
+    max-width: 220px;
+    background-image: repeating-linear-gradient(
+        90deg,
+        #111 0px, #111 2px, transparent 2px, transparent 4px,
+        #111 4px, #111 5px, transparent 5px, transparent 9px,
+        #111 9px, #111 12px, transparent 12px, transparent 14px,
+        #111 14px, #111 15px, transparent 15px, transparent 18px
+    );
+}
+
+.ticket-url {
+    text-align: center;
+    font-size: 0.68rem;
+    letter-spacing: 1px;
+    color: #555;
+    margin: 0;
+}
+
+.ticket-footer-logo {
+    text-align: center;
+    font-size: 0.8rem;
+    font-weight: 700;
+    margin-top: var(--spacing-sm);
+    letter-spacing: 1px;
+}
+
+.ticket-actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    width: 100%;
+    max-width: 380px;
+    margin: 0 auto;
+}
+
+.ticket-actions .btn {
+    width: 100%;
+}
+
+
+/* ============================================
+   CONTROLS PANEL
+   ============================================ */
+
+.controls-column {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+.controls-title {
+    font-family: var(--font-serif);
+    font-size: 1.8rem;
+    color: var(--color-brown-dark);
+    font-weight: 700;
+}
+
+.control-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.control-label {
+    font-weight: 700;
+    color: var(--color-brown-dark);
+    font-size: 0.95rem;
+}
+
+.control-select {
+    padding: var(--spacing-md);
+    border: 2px solid var(--color-accent-gold);
+    border-radius: var(--radius-md);
+    background: white;
+    font-size: 1rem;
+    color: var(--color-brown-dark);
+    cursor: pointer;
+}
+
+.pill-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-xs);
+}
+
+.pill {
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: 999px;
+    border: 2px solid var(--color-accent-gold);
+    background: white;
+    color: var(--color-brown-dark);
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.pill:hover {
+    border-color: var(--color-coffee);
+}
+
+.pill.active {
+    background: var(--color-brown-dark);
+    border-color: var(--color-brown-dark);
+    color: white;
+}
+
+.reorder-group {
+    max-height: 360px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+.rank-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.rank-row {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    background: rgba(200, 169, 126, 0.08);
+    border-radius: var(--radius-sm);
+}
+
+.rank-select {
+    flex: 0 0 auto;
+    padding: 4px 6px;
+    border-radius: 6px;
+    border: 1px solid var(--color-accent-gold);
+    background: white;
+    font-weight: 700;
+    color: var(--color-coffee);
+    cursor: pointer;
+}
+
+.rank-row-name {
+    flex: 1 1 auto;
+    font-size: 0.85rem;
+    color: var(--color-brown-dark);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+
+@media print {
+    body {
+        background: white;
+        padding: 0;
+    }
+
+    .wrapper {
+        padding: 0;
+        margin: 0;
+    }
+
+    .container {
+        max-width: 100%;
+        margin: 0;
+        padding: 0;
+    }
+
+    .workspace-grid {
+        display: block;
+    }
+
+    .controls-column,
+    .ticket-actions,
+    .workspace-top {
+        display: none;
+    }
+
+    .ticket {
+        box-shadow: none;
+        border: 1px solid #ccc;
+        margin: 0;
+        max-width: 100%;
+        transform: none;
+    }
+}
+
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+@media (max-width: 768px) {
+    :root {
+        --spacing-lg: 1.5rem;
+        --spacing-xl: 2rem;
+        --spacing-2xl: 2.5rem;
+    }
+
+    .main-title {
+        font-size: 2.2rem;
+    }
+
+    .subtitle {
+        font-size: 1.1rem;
+    }
+
+    .upload-card {
+        padding: var(--spacing-lg);
+    }
+
+    .help-steps {
+        grid-template-columns: 1fr;
+    }
+
+    .workspace-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .ticket {
+        max-width: 100%;
+        transform: none;
+    }
+
+    .ticket-actions {
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    :root {
+        --spacing-md: 1rem;
+        --spacing-lg: 1.2rem;
+    }
+
+    .wrapper {
+        padding: var(--spacing-sm);
+    }
+
+    .main-title {
+        font-size: 1.8rem;
+    }
+
+    .subtitle {
+        font-size: 1rem;
+    }
+
+    .upload-card {
+        padding: var(--spacing-lg);
+    }
+
+    .file-upload-content {
+        padding: var(--spacing-lg) var(--spacing-md);
+    }
+
+    .upload-icon {
+        font-size: 2rem;
+    }
+
+    .file-upload-content h2 {
+        font-size: 1.2rem;
+    }
+
+    .btn {
+        padding: var(--spacing-md) var(--spacing-lg);
+        font-size: 0.9rem;
+    }
+
+    .ticket {
+        font-size: 0.75rem;
+    }
+
+    .ticket-brand {
+        font-size: 1.3rem;
+    }
+}
+
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Intentionally no @media (prefers-color-scheme: dark) override —
+   the receipt/bookstore aesthetic is light-mode only by design. */

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReadReceipts - Upload</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="wrapper">
+    <div class="container">
+        <div class="upload-page">
+            <!-- Header -->
+            <div class="header">
+                <h1 class="main-title">ReadReceipts</h1>
+                <p class="subtitle">YOUR READING HISTORY, NOW IN RECEIPTS</p>
+                <p class="description">Upload your Goodreads or StoryGraph CSV export to generate a beautiful receipt of your reading habits</p>
+            </div>
+
+            <!-- Help Section -->
+            <div class="help-section">
+                <h3>How to get your CSV file:</h3>
+                <div class="help-steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <p><strong>Goodreads:</strong> Go to My Books > Tools > Import and Export</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <p><strong>StoryGraph:</strong> Profile Icon > Manage Profile > Export StoryGraph Data > Export</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <p>Download your library and upload the CSV file here</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upload Card -->
+            <div class="upload-card">
+                <form method="POST" action="{{ url_for('upload') }}" enctype="multipart/form-data" class="upload-form">
+                    <!-- Custom File Upload Area -->
+                    <div class="file-upload-wrapper">
+                        <label for="csv_file" class="file-upload-label">
+                            <div class="file-upload-content">
+                                <div class="upload-icon">📁</div>
+                                <h2>Choose your CSV file</h2>
+                                <p class="upload-hint">Click to browse or drag and drop</p>
+                                <p class="upload-formats">Supported format: .csv</p>
+                            </div>
+                            <input 
+                                type="file" 
+                                id="csv_file" 
+                                name="csv_file" 
+                                accept=".csv"
+                                required
+                                class="file-input"
+                            >
+                        </label>
+                        <div class="file-name-display" id="fileName"></div>
+                    </div>
+
+                    <!-- Optional Display Name -->
+                    <div class="name-field-wrapper">
+                        <label for="display_name" class="name-field-label">Your name (optional, shown on the receipt)</label>
+                        <input
+                            type="text"
+                            id="display_name"
+                            name="display_name"
+                            class="name-field-input"
+                            placeholder="Reader"
+                            maxlength="40"
+                        >
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn btn-primary">
+                        <span class="btn-text">Next: Customize Receipt</span>
+                        <span class="btn-arrow">→</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Error Message -->
+            {% if error %}
+            <div class="error-container">
+                <div class="error-message">
+                    <span class="error-icon">⚠️</span>
+                    <span class="error-text">{{ error }}</span>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Footer -->
+            <div class="footer">
+                <p>Made by Aalia</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Display selected file name
+    const fileInput = document.getElementById('csv_file');
+    const fileNameDisplay = document.getElementById('fileName');
+    
+    fileInput.addEventListener('change', function(e) {
+        if (this.files && this.files[0]) {
+            fileNameDisplay.textContent = '✓ ' + this.files[0].name;
+            fileNameDisplay.classList.add('show');
+        }
+    });
+
+    // Drag and drop
+    const uploadLabel = document.querySelector('.file-upload-label');
+    
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        uploadLabel.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        uploadLabel.addEventListener(eventName, highlight, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        uploadLabel.addEventListener(eventName, unhighlight, false);
+    });
+
+    function highlight(e) {
+        uploadLabel.classList.add('highlight');
+    }
+
+    function unhighlight(e) {
+        uploadLabel.classList.remove('highlight');
+    }
+
+    uploadLabel.addEventListener('drop', handleDrop, false);
+
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        fileInput.files = files;
+        
+        const event = new Event('change', { bubbles: true });
+        fileInput.dispatchEvent(event);
+    }
+</script>
+</body>
+</html>

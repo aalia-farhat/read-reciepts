@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReadReceipts - Your Receipt</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="wrapper">
+    <div class="container container-wide">
+        <div class="workspace-page">
+            <div class="workspace-top">
+                <a href="{{ url_for('start_over') }}" class="back-link">Upload a different file</a>
+            </div>
+
+            <div class="workspace-grid">
+                <!-- Ticket column -->
+                <div class="ticket-column">
+                    <div class="ticket ticket-classic" id="ticket">
+                        <div class="ticket-header">
+                            <h1 class="ticket-brand">READRECEIPTS</h1>
+                            <p class="ticket-period">{{ receipt.period_label }}</p>
+                        </div>
+
+                        <div class="ticket-order">
+                            <p>ORDER #0001 FOR {{ receipt.display_name|upper }}</p>
+                            <p>{{ today|upper }}</p>
+                        </div>
+
+                        <div class="ticket-rule"></div>
+
+                        <div class="ticket-columns-header">
+                            <span class="col-qty">QTY</span>
+                            <span class="col-item">ITEM</span>
+                            <span class="col-amt">AMT</span>
+                        </div>
+
+                        <div class="ticket-rule ticket-rule-thin"></div>
+
+                        <div class="ticket-items" id="ticketItems">
+                            {% for item in receipt.entries %}
+                            <div class="ticket-item" data-key="{{ loop.index0 }}">
+                                <div class="ticket-item-row">
+                                    <span class="item-qty">{{ "%02d"|format(loop.index) }}</span>
+                                    {% if item.kind == 'book' %}
+                                    <span class="item-name">{{ item.title|upper }} &ndash; {{ item.author|upper }}</span>
+                                    <span class="item-amt">{{ item.pages }}pg</span>
+                                    {% else %}
+                                    <span class="item-name">{{ item.name|upper }}</span>
+                                    <span class="item-amt">x{{ item.amount }}</span>
+                                    {% endif %}
+                                </div>
+                                {% if item.kind == 'book' %}
+                                <div class="ticket-item-sub">
+                                    {% for i in range(item.rating|int) %}★{% endfor %}{% if item.rating % 1 %}☆{% endif %}
+                                    ({{ "%.1f"|format(item.rating) }}) &middot; {{ item.duration }}d
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% else %}
+                            <p class="ticket-empty">No {{ receipt.metric_label|lower }} found for this period.</p>
+                            {% endfor %}
+                        </div>
+
+                        <div class="ticket-rule"></div>
+
+                        <div class="ticket-totals">
+                            <p>ITEM COUNT: <span>{{ receipt.item_count }}</span></p>
+                            <p>TOTAL: <span id="ticketTotal">{{ receipt.total }}{% if receipt.metric == 'books' %}pg{% endif %}</span></p>
+                        </div>
+
+                        <div class="ticket-rule"></div>
+
+                        <div class="ticket-card-info">
+                            <p>CARD #: **** **** **** {{ card_last4 }}</p>
+                            <p>AUTH CODE: {{ auth_code }}</p>
+                            <p>CARDHOLDER: {{ receipt.display_name|upper }}</p>
+                        </div>
+
+                        <p class="ticket-thanks">THANK YOU FOR VISITING!</p>
+
+                        <div class="ticket-barcode"></div>
+                        <p class="ticket-url">readreceipts.local</p>
+
+                        <div class="ticket-footer-logo">📖 ReadReceipts</div>
+                    </div>
+
+                    <div class="ticket-actions">
+                        <button type="button" id="downloadImageBtn" class="btn btn-primary">Download Image</button>
+                        <button type="button" id="viewNewTabBtn" class="btn btn-primary">View in New Tab</button>
+                        <button type="button" id="printBtn" class="btn btn-primary">Print Receipt</button>
+                    </div>
+                </div>
+
+                <!-- Controls column -->
+                <div class="controls-column">
+                    <h1 class="controls-title">Customize Receipt</h1>
+
+                    <form method="get" action="{{ url_for('workspace') }}" id="controlsForm">
+                        <div class="control-group">
+                            <label class="control-label" for="metric">Metric</label>
+                            <select name="metric" id="metric" class="control-select">
+                                <option value="books" {% if metric == 'books' %}selected{% endif %}>Top Books</option>
+                                <option value="authors" {% if metric == 'authors' %}selected{% endif %}>Top Authors</option>
+                                <option value="genres" {% if metric == 'genres' %}selected{% endif %}>Top Genres</option>
+                            </select>
+                        </div>
+
+                        <div class="control-group">
+                            <label class="control-label">Time Period</label>
+                            <input type="hidden" name="period" id="periodInput" value="{{ period }}">
+                            <div class="pill-group" data-hidden="periodInput">
+                                <button type="button" class="pill {% if period == 'month' %}active{% endif %}" data-value="month">Last Month</button>
+                                <button type="button" class="pill {% if period == 'six_months' %}active{% endif %}" data-value="six_months">Last 6 Months</button>
+                                <button type="button" class="pill {% if period == 'year' %}active{% endif %}" data-value="year">Last Year</button>
+                                <button type="button" class="pill {% if period == 'all' %}active{% endif %}" data-value="all">All Time</button>
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <label class="control-label">Length</label>
+                            <input type="hidden" name="top_count" id="topCountInput" value="{{ top_count }}">
+                            <div class="pill-group" data-hidden="topCountInput">
+                                <button type="button" class="pill {% if top_count == 3 %}active{% endif %}" data-value="3">Top 3</button>
+                                <button type="button" class="pill {% if top_count == 5 %}active{% endif %}" data-value="5">Top 5</button>
+                                <button type="button" class="pill {% if top_count == 10 %}active{% endif %}" data-value="10">Top 10</button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <div class="control-group">
+                        <label class="control-label">Font</label>
+                        <div class="pill-group" id="fontPillGroup">
+                            <button type="button" class="pill active" data-value="classic">Classic</button>
+                            <button type="button" class="pill" data-value="compatible">Internationally Compatible</button>
+                        </div>
+                    </div>
+
+                    {% if receipt.entries %}
+                    <div class="control-group reorder-group">
+                        <label class="control-label">Reorder &mdash; choose what goes first</label>
+                        <div class="rank-list" id="rankList">
+                            {% for item in receipt.entries %}
+                            <div class="rank-row" data-key="{{ loop.index0 }}">
+                                <select class="rank-select" aria-label="Rank for {{ item.title if item.kind == 'book' else item.name }}"></select>
+                                <span class="rank-row-name">{{ item.title if item.kind == 'book' else item.name }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="application/json" id="ticketData">{{ receipt.entries|tojson }}</script>
+<script>
+    window.TICKET_METRIC = {{ receipt.metric|tojson }};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="{{ url_for('static', filename='workspace.js') }}"></script>
+</body>
+</html>

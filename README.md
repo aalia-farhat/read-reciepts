@@ -2,8 +2,6 @@
 
 **Turn your reading history into a receipt.** Upload a Goodreads or StoryGraph export and get back a genuinely receipt-like ticket of your top books, authors, or genres — crinkled paper texture, barcode, and all — fully customizable and exportable as an image.
 
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/aalia-farhat/read-reciepts)
-
 <!-- Add a screenshot before sharing this README: save one as docs/screenshot.png,
      then uncomment the line below.
 ![ReadReceipts screenshot](docs/screenshot.png)
@@ -25,10 +23,6 @@
   - **Reorder** — pick any item's rank from a dropdown to move it to that position, instantly, client-side
 - **Export** — download the receipt as a PNG, open it full-size in a new tab, or print it
 - A receipt that actually looks like a receipt: procedurally generated crumpled-paper texture, dashed tear lines, order number, QTY/ITEM/AMT columns, barcode, and a card-slip footer
-
-## Try it
-
-Click **Deploy to Render** above to spin up your own free, live copy in about a minute — no credit card required. (Free-tier instances sleep after inactivity, so the first load after a while takes ~30–50s to wake up; open it once before showing it to anyone.)
 
 ## Quick start (local)
 
@@ -59,7 +53,6 @@ Only rows marked as read (`Exclusive Shelf` / `Read Status` = "read") are includ
 - **Backend**: Flask, Pandas
 - **Frontend**: Jinja2 templates, vanilla CSS/JS — no build step, no frontend framework
 - **Image export**: [html2canvas](https://html2canvas.hertzen.com/) (loaded from a CDN)
-- **Deployment**: [Render](https://render.com) (see `render.yaml`)
 
 ## Project structure
 
@@ -67,7 +60,6 @@ Only rows marked as read (`Exclusive Shelf` / `Read Status` = "read") are includ
 ReadReceipts/
 ├── app.py               # Flask app: CSV parsing, filtering/sorting, the /workspace route
 ├── requirements.txt
-├── render.yaml           # One-click Render deployment config
 ├── sample_library.csv    # Sample Goodreads-format data for trying the app
 ├── static/
 │   ├── style.css          # All styling, including the receipt/ticket reproduction
@@ -81,6 +73,6 @@ ReadReceipts/
 
 ## Notes / limitations
 
-- Uploaded CSVs and reading data are held in the Flask session and a temporary file on disk — there's no database or user accounts, so nothing persists between browsers/devices or across a redeploy.
+- Uploaded CSVs and reading data are held in the Flask session and a temporary file on disk — there's no database or user accounts, so nothing persists between browsers/devices or restarts.
 - StoryGraph exports don't carry page counts or a reading-start date, so "pages" and "days to read" show as 0 for books sourced from StoryGraph.
-- The bundled dev server (`python app.py`) is for local use only; the live deployment runs behind gunicorn (see `render.yaml`).
+- The bundled dev server (`python app.py`) is for local/development use only — it's not meant to be exposed on the public internet as-is.

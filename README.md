@@ -4,9 +4,9 @@ Turns your Goodreads or StoryGraph export into a printable receipt of what you'v
 
 Web application inspired by [Receiptify](https://receiptify.herokuapp.com/). Generates receipts that list out a user's top books, authors, or genres from their reading history — for the last month, 6 months, year, or all time.
 
-![Customize Receipt workspace](docs/workspace.png)
+The application can be viewed at https://read-reciepts.onrender.com/.
 
-![Receipt closeup](docs/ticket-closeup.png)
+![Customize Receipt workspace](docs/workspace.png)
 
 ## Running the App Locally
 

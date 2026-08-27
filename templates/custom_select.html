@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReadReceipts - Customise My List</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="wrapper">
+    <div class="container container-wide">
+        <div class="custom-select-page">
+            <div class="workspace-top">
+                <a href="{{ url_for('workspace') }}" class="back-link">&larr; Back to receipt</a>
+            </div>
+
+            <div class="header">
+                <h1 class="main-title">Customise My List</h1>
+                <p class="description">Pick up to 10 books from your uploaded library to feature on the receipt, instead of the auto-sorted top picks.</p>
+            </div>
+
+            {% if books %}
+            <div class="custom-select-layout">
+                <!-- Search + checklist -->
+                <div class="custom-select-list-panel">
+                    <div class="customize-card">
+                        <form method="POST" action="{{ url_for('custom_select') }}" id="customSelectForm">
+                            <div class="control-group">
+                                <label class="control-label" for="receiptNameInput">Name Your Receipt</label>
+                                <input
+                                    type="text"
+                                    id="receiptNameInput"
+                                    name="receipt_name"
+                                    class="control-select"
+                                    placeholder="READRECEIPTS"
+                                    maxlength="30"
+                                    value="{{ '' if receipt_name == 'READRECEIPTS' else receipt_name }}"
+                                >
+                            </div>
+
+                            <div class="control-group">
+                                <label class="control-label" for="bookSearchInput">Search</label>
+                                <input
+                                    type="text"
+                                    id="bookSearchInput"
+                                    class="control-select"
+                                    placeholder="Search your books..."
+                                    autocomplete="off"
+                                >
+                            </div>
+
+                            <div class="selection-counter" id="selectionCounter">0 books selected</div>
+                            <p class="selection-warning" id="selectionWarning">You can select at most 10 books. Uncheck one before adding another.</p>
+
+                            <div class="book-checklist" id="bookChecklist">
+                                {% for book in books %}
+                                <div class="form-group book-row">
+                                    <label class="book-checkbox-label">
+                                        <input type="checkbox" name="book_index" value="{{ book.index }}" class="book-checkbox">
+                                        <span class="book-row-info">
+                                            <span class="book-row-title">{{ book.title }}</span>
+                                            <span class="book-row-author">{{ book.author }}</span>
+                                            <span class="book-row-rating">{% for i in range(book.rating|int) %}&#9733;{% endfor %}{% if book.rating % 1 %}&#9734;{% endif %} ({{ "%.1f"|format(book.rating) }})</span>
+                                        </span>
+                                    </label>
+                                </div>
+                                {% endfor %}
+                                <p class="book-checklist-empty" id="noBooksFound">No books found</p>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary" id="generateBtn">
+                                <span class="btn-text">Generate Receipt</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Live receipt preview -->
+                <div class="custom-select-preview-panel">
+                    <div class="ticket ticket-classic" id="previewTicket">
+                        <div class="ticket-header">
+                            <h1 class="ticket-brand" id="previewStoreName">{{ receipt_name }}</h1>
+                            <p class="ticket-period">YOUR READING HISTORY</p>
+                        </div>
+
+                        <div class="ticket-rule"></div>
+
+                        <div class="ticket-columns-header">
+                            <span class="col-qty">QTY</span>
+                            <span class="col-item">ITEM</span>
+                        </div>
+
+                        <div class="ticket-rule ticket-rule-thin"></div>
+
+                        <div class="ticket-items" id="previewItems"></div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="customize-card">
+                <p>No read books were found in your uploaded library.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script type="application/json" id="booksData">{{ books|tojson }}</script>
+<script>
+(function () {
+    'use strict';
+
+    var dataEl = document.getElementById('booksData');
+    var checkboxes = Array.prototype.slice.call(document.querySelectorAll('.book-checkbox'));
+    var counterEl = document.getElementById('selectionCounter');
+    var warningEl = document.getElementById('selectionWarning');
+    var submitBtn = document.getElementById('generateBtn');
+    var searchInput = document.getElementById('bookSearchInput');
+    var noResultsEl = document.getElementById('noBooksFound');
+    var previewItemsEl = document.getElementById('previewItems');
+    var previewNameEl = document.getElementById('previewStoreName');
+    var nameInput = document.getElementById('receiptNameInput');
+
+    if (!dataEl || !checkboxes.length || !counterEl || !warningEl || !submitBtn) {
+        return;
+    }
+
+    var MAX_BOOKS = 10;
+    var booksByIndex = {};
+    JSON.parse(dataEl.textContent || '[]').forEach(function (book) {
+        booksByIndex[book.index] = book;
+    });
+
+    function escapeHtml(value) {
+        return String(value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    function updateCounter() {
+        var count = checkboxes.filter(function (cb) { return cb.checked; }).length;
+        counterEl.textContent = count + (count === 1 ? ' book selected' : ' books selected');
+
+        var overLimit = count > MAX_BOOKS;
+        warningEl.classList.toggle('show', overLimit);
+        submitBtn.disabled = overLimit;
+    }
+
+    function updatePreview() {
+        var rows = checkboxes
+            .filter(function (cb) { return cb.checked; })
+            .map(function (cb) { return booksByIndex[cb.value]; })
+            .filter(Boolean);
+
+        previewItemsEl.innerHTML = rows.map(function (book, i) {
+            var qty = String(i + 1).padStart(2, '0');
+            return (
+                '<div class="ticket-item">' +
+                    '<div class="ticket-item-row">' +
+                        '<span class="item-qty">' + qty + '</span>' +
+                        '<span class="item-name">' + escapeHtml(book.title.toUpperCase()) + '</span>' +
+                    '</div>' +
+                    '<div class="ticket-item-sub">' + escapeHtml(book.author) + '</div>' +
+                '</div>'
+            );
+        }).join('');
+    }
+
+    function applySearch() {
+        if (!searchInput) return;
+        var query = searchInput.value.trim().toLowerCase();
+        var visibleCount = 0;
+
+        checkboxes.forEach(function (cb) {
+            var book = booksByIndex[cb.value];
+            var row = cb.closest('.book-row');
+            var match = !query
+                || book.title.toLowerCase().indexOf(query) !== -1
+                || book.author.toLowerCase().indexOf(query) !== -1;
+            row.classList.toggle('hidden', !match);
+            if (match) visibleCount += 1;
+        });
+
+        if (noResultsEl) {
+            noResultsEl.classList.toggle('show', visibleCount === 0);
+        }
+    }
+
+    function updatePreviewName() {
+        if (!nameInput || !previewNameEl) return;
+        previewNameEl.textContent = nameInput.value.trim() || 'READRECEIPTS';
+    }
+
+    checkboxes.forEach(function (cb) {
+        cb.addEventListener('change', function () {
+            updateCounter();
+            updatePreview();
+        });
+    });
+
+    if (searchInput) {
+        searchInput.addEventListener('input', applySearch);
+    }
+
+    if (nameInput) {
+        nameInput.addEventListener('input', updatePreviewName);
+    }
+
+    updateCounter();
+    updatePreview();
+})();
+</script>
+</body>
+</html>

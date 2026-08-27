@@ -152,6 +152,13 @@ def normalize_csv(df, platform):
         raise
 
 
+def get_read_books(filepath, platform):
+    """Read the uploaded CSV and return only the read books, normalized and reindexed"""
+    df = pd.read_csv(filepath)
+    normalized = normalize_csv(df, platform)
+    return normalized[normalized['read_status'] == 'read'].reset_index(drop=True)
+
+
 def aggregate_authors(books, top_count):
     """Rank authors by number of books read"""
     counts = books['author'].value_counts()
@@ -333,21 +340,6 @@ def workspace():
     if 'uploaded_file' not in session:
         return redirect(url_for('index'))
 
-    metric = request.args.get('metric', 'books')
-    if metric not in METRIC_LABELS:
-        metric = 'books'
-
-    period = request.args.get('period', 'all')
-    if period not in PERIOD_LABELS:
-        period = 'all'
-
-    try:
-        top_count = int(request.args.get('top_count', 10))
-    except ValueError:
-        top_count = 10
-    if top_count not in (3, 5, 10):
-        top_count = 10
-
     platform = session.get('platform', 'unknown')
     display_name = session.get('display_name', 'Reader')
     filepath = get_upload_path(session['uploaded_file'])
@@ -356,11 +348,45 @@ def workspace():
         session.clear()
         return redirect(url_for('index'))
 
-    receipt = compute_receipt(filepath, platform, metric, period, top_count, display_name)
+    # "Name Your Receipt" lives in the same GET controlsForm as the other
+    # controls, so it's only present in the query string when that form was
+    # actually submitted (including via Enter in the text field).
+    if 'receipt_name' in request.args:
+        session['receipt_name'] = request.args.get('receipt_name', '').strip() or 'READRECEIPTS'
+    receipt_name = session.get('receipt_name', 'READRECEIPTS')
 
-    if receipt is None:
-        session.clear()
-        return redirect(url_for('index'))
+    # A hand-picked list from /custom-select takes over the ticket in place
+    # of the algorithm's auto-sorted top N, until the reader changes one of
+    # the Customize Receipt controls below (which submits back to this same
+    # route without ?custom=1 and falls through to the normal path).
+    use_custom = request.args.get('custom') == '1' and 'custom_receipt' in session
+
+    if use_custom:
+        receipt = session['custom_receipt']
+        metric = receipt['metric']
+        period = receipt['period']
+        top_count = receipt['item_count']
+    else:
+        metric = request.args.get('metric', 'books')
+        if metric not in METRIC_LABELS:
+            metric = 'books'
+
+        period = request.args.get('period', 'all')
+        if period not in PERIOD_LABELS:
+            period = 'all'
+
+        try:
+            top_count = int(request.args.get('top_count', 10))
+        except ValueError:
+            top_count = 10
+        if top_count not in (3, 5, 10):
+            top_count = 10
+
+        receipt = compute_receipt(filepath, platform, metric, period, top_count, display_name)
+
+        if receipt is None:
+            session.clear()
+            return redirect(url_for('index'))
 
     return render_template(
         'workspace.html',
@@ -371,7 +397,108 @@ def workspace():
         today=datetime.now().strftime('%A, %B %-d, %Y') if os.name != 'nt' else datetime.now().strftime('%A, %B %#d, %Y'),
         card_last4=session.get('card_last4', '0000'),
         auth_code=session.get('auth_code', '000000'),
+        custom_active=use_custom,
+        receipt_name=receipt_name,
     )
+
+
+@app.route('/custom-select', methods=['GET'])
+def custom_select():
+    """Let the reader hand-pick which read books appear on the receipt"""
+    if 'uploaded_file' not in session or 'platform' not in session:
+        return redirect(url_for('index'))
+
+    filepath = get_upload_path(session['uploaded_file'])
+    if not os.path.exists(filepath):
+        session.clear()
+        return redirect(url_for('index'))
+
+    try:
+        read_books = get_read_books(filepath, session['platform'])
+    except Exception:
+        session.clear()
+        return redirect(url_for('index'))
+
+    books = [
+        {
+            'index': idx,
+            'title': str(row['title']),
+            'author': str(row['author']),
+            'rating': float(row['rating']) if pd.notna(row['rating']) else 0,
+        }
+        for idx, row in read_books.iterrows()
+    ]
+
+    return render_template(
+        'custom_select.html',
+        books=books,
+        receipt_name=session.get('receipt_name', 'READRECEIPTS'),
+    )
+
+
+@app.route('/custom-select', methods=['POST'])
+def custom_select_submit():
+    """Build a receipt from the reader's hand-picked books"""
+    if 'uploaded_file' not in session or 'platform' not in session:
+        return redirect(url_for('index'))
+
+    filepath = get_upload_path(session['uploaded_file'])
+    if not os.path.exists(filepath):
+        session.clear()
+        return redirect(url_for('index'))
+
+    try:
+        read_books = get_read_books(filepath, session['platform'])
+    except Exception:
+        session.clear()
+        return redirect(url_for('index'))
+
+    raw_indices = request.form.getlist('book_index')
+    selected_indices = sorted({
+        int(i) for i in raw_indices
+        if i.isdigit() and 0 <= int(i) < len(read_books)
+    })[:10]
+
+    selected = read_books.loc[selected_indices]
+
+    session['receipt_name'] = request.form.get('receipt_name', '').strip() or 'READRECEIPTS'
+
+    entries = [
+        {
+            'kind': 'book',
+            'title': str(row['title']),
+            'author': str(row['author']),
+            'rating': float(row['rating']) if pd.notna(row['rating']) else 0,
+            'pages': int(row['pages']) if pd.notna(row['pages']) else 0,
+            'duration': 0,
+        }
+        for _, row in selected.iterrows()
+    ]
+
+    total_pages = sum(item['pages'] for item in entries)
+    total_books = len(entries)
+    avg_rating = round(float(selected['rating'].mean()), 2) if not selected.empty else 0
+    top_authors = aggregate_authors(selected, 5) if not selected.empty else []
+
+    receipt_data = {
+        'entries': entries,
+        'metric': 'books',
+        'metric_label': 'My Selection',
+        'period': 'custom',
+        'period_label': 'MY SELECTION',
+        'item_count': total_books,
+        'total': total_pages,
+        'total_pages': total_pages,
+        'total_books': total_books,
+        'avg_rating': avg_rating,
+        'top_authors': top_authors,
+        'total_days': 0,
+        'display_name': session.get('display_name', 'Reader'),
+    }
+
+    session['custom_receipt'] = receipt_data
+
+    return redirect(url_for('workspace', custom=1))
 
 
 @app.route('/start-over')

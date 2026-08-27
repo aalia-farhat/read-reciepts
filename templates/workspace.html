@@ -6,12 +6,15 @@
     <title>ReadReceipts - Your Receipt</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body class="workspace-body">
+<body>
 <div class="wrapper">
     <div class="container container-wide">
         <div class="workspace-page">
             <div class="workspace-top">
                 <a href="{{ url_for('start_over') }}" class="back-link">Upload a different file</a>
+                {% if custom_active %}
+                <a href="{{ url_for('workspace') }}" class="back-link">Use auto-sorted picks instead</a>
+                {% endif %}
             </div>
 
             <div class="workspace-grid">
@@ -19,7 +22,7 @@
                 <div class="ticket-column">
                     <div class="ticket ticket-classic" id="ticket">
                         <div class="ticket-header">
-                            <h1 class="ticket-brand">READRECEIPTS</h1>
+                            <h1 class="ticket-brand">{{ receipt_name }}</h1>
                             <p class="ticket-period">{{ receipt.period_label }}</p>
                         </div>
 
@@ -90,6 +93,7 @@
                         <button type="button" id="downloadImageBtn" class="btn btn-primary">Download Image</button>
                         <button type="button" id="viewNewTabBtn" class="btn btn-primary">View in New Tab</button>
                         <button type="button" id="printBtn" class="btn btn-primary">Print Receipt</button>
+                        <a href="{{ url_for('custom_select') }}" class="btn btn-secondary">Customise My List</a>
                     </div>
                 </div>
 
@@ -98,6 +102,19 @@
                     <h1 class="controls-title">Customize Receipt</h1>
 
                     <form method="get" action="{{ url_for('workspace') }}" id="controlsForm">
+                        <div class="control-group">
+                            <label class="control-label" for="receiptNameInput">Name Your Receipt</label>
+                            <input
+                                type="text"
+                                id="receiptNameInput"
+                                name="receipt_name"
+                                class="control-select"
+                                placeholder="READRECEIPTS"
+                                maxlength="30"
+                                value="{{ '' if receipt_name == 'READRECEIPTS' else receipt_name }}"
+                            >
+                        </div>
+
                         <div class="control-group">
                             <label class="control-label" for="metric">Metric</label>
                             <select name="metric" id="metric" class="control-select">
